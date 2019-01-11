@@ -12,11 +12,14 @@ class ItemOrderSerializer(serializers.ModelSerializer):
         model = ItemOrder
         fields = ("title", "quantity")
 
+        def create(self, validated_data):
+            return ItemOrder(**validated_data)
+
 class CartSerializer(serializers.ModelSerializer):
-    items = ItemOrderSerializer(many=True)
+    #items = ItemOrderSerializer(many=True)
     class Meta:
         model = Cart
-        fields = ("cart_name")
+        fields = ("cart_name",)
 
     # def create(self, validated_data):
     #     items_data = validated_data.pop('items')
