@@ -6,9 +6,10 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.decorators import api_view
 from .models import Item, Cart
 from .serializer import ItemSerializer, CartSerializer, ItemOrderSerializer
+from oauth2_provider.decorators import protected_resource
 
 # Create your views here.
-
+@protected_resource(scopes=['read', 'write'])
 @api_view(['GET', 'POST'])
 def itemList(request, version):
     if request.method == 'GET':
@@ -155,6 +156,8 @@ def itemList(request, version):
             return JsonResponse(status=400,data={'status':'false',
             'message':'no version specified'} )
 
+
+@protected_resource(scopes=['read'])
 @api_view(['GET'])
 def detailItem(request, name, version):
     try:
