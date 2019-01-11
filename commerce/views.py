@@ -49,6 +49,59 @@ def itemList(request, version):
 
             return JsonResponse(serializer.errors, status=406)
         elif version == 'v2':
+            #check command: create, update, complete
+            try:
+                command = request.data['command']
+            except KeyError:
+                return JsonResponse(status=401, data={'status':'false',
+                            'message':'no command provided'})
+
+
+            if command == 'create':
+                serializer = CartSerializer(data=request.data)
+                cart = serializer.save()
+
+            #add item to cart (one at a time, or many)
+            elif command == 'update':
+                serializer = ItemOrderSerializer(data=request.data)
+                items = serializer.save()
+
+                try:
+                    cart_id = request.data['id']
+                    cart = Cart.objects.get(cart_id=cart_id)
+                except KeyError:
+                    return JsonResponse(status=401, data={'status':'false',
+                                    'message':'cart not identified'})
+
+                cart.items.create(title=items.title, quantity=items.quantity)
+
+                #update cart value
+
+            elif command == 'complete':
+                try:
+                    cart_id = request.data['id']
+                    cart = Cart.objects.get(cart_id=cart_id)
+                except KeyError:
+                    return JsonResponse(status=401, data={'status':'false',
+                                    'message':'no command provided'})
+
+                #check if cart was already completed
+                if cart.status == True:
+                    return JsonResponse(status=400, data={'message:Cart already completed'})
+
+                cart.status = True
+
+                #update inventory:
+                items = Cart.items.all()
+
+                #update inventory for each item
+                for item in items:
+                    inventory_item = Item.objects.get(title=item.title)
+                    diff = inventory_item.inventory_count - item.quantity
+                    inventory_item.inventory_count = diff
+                    inventory_item.save()
+
+
             try:
                 complete_flag = request.data['complete']
             except KeyError:

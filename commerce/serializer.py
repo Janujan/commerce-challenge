@@ -16,11 +16,11 @@ class CartSerializer(serializers.ModelSerializer):
     items = ItemOrderSerializer(many=True)
     class Meta:
         model = Cart
-        fields = ("total_val", "items")
+        fields = ("cart_name")
 
-    def create(self, validated_data):
-        items_data = validated_data.pop('items')
-        cart = Cart.objects.create(**validated_data)
-        for item_data in items_data:
-            ItemOrder.objects.create(cart = cart, title=item_data['title'], quantity=item_data['quantity'])
-        return cart
+    # def create(self, validated_data):
+    #     items_data = validated_data.pop('items')
+    #     cart = Cart.objects.create(**validated_data)
+    #     for item_data in items_data:
+    #         ItemOrder.objects.create(cart = cart, title=item_data['title'], quantity=item_data['quantity'])
+    #     return cart
