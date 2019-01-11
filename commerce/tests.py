@@ -40,7 +40,6 @@ class GetItemsTest(BaseViewTest):
         """
         Test getting all items through api call
         """
-        # hit the API endpoint
         response = self.client.get(
             reverse("commerce:itemlist", kwargs={'version':'v2'})
         )
@@ -52,8 +51,9 @@ class GetItemsTest(BaseViewTest):
 
 
     def test_get_detail_item(self):
-        # hit the API endpoint
-
+        """
+        Test getting detail item through api call
+        """
         items = Item.objects.all()
         index = random.randint(0, len(items)-1)
         name = items[index].title
@@ -70,7 +70,7 @@ class GetItemsTest(BaseViewTest):
 class PurchasePostTest(BaseViewTest):
     def test_create_ItemOrder(self):
         """
-        Ensure we can create a new account object.
+        Ensure we can purchase one item on old version.
         """
         url = reverse('commerce:itemlist', kwargs={'version':'v1'})
         data = {'title': 'pen', 'quantity':2}
@@ -116,7 +116,7 @@ class PurchaseCartTest(BaseViewTest):
 
     def test_complete_Cart(self):
         """
-        Ensure we can update a cart object.
+        Ensure we can complete a cart object.
         """
         url = reverse('commerce:itemlist', kwargs={'version':'v2'})
 
@@ -128,15 +128,3 @@ class PurchaseCartTest(BaseViewTest):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Cart.objects.count(), 1)
         self.assertEqual(Cart.objects.get().cart_status, 1)
-
-# class PlayerPostTestFail(APITestCase):
-#     def test_fail_create_Player(self):
-#         """
-#         Ensure that with no auth, player does not get saved
-#         """
-#         url = reverse('mvp:playersList')
-#         authenticated = 0
-#         data = {'player_name': 'Kobe Bryant', 'player_team':'LALakers', 'complete':authenticated}
-#         response = self.client.post(url, data, format='json')
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-#         self.assertEqual(Player.objects.count(), 0)
