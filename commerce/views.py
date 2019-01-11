@@ -49,44 +49,107 @@ def itemList(request, version):
 
             return JsonResponse(serializer.errors, status=406)
         elif version == 'v2':
+            #check command: create, update, complete
             try:
-                complete_flag = request.data['complete']
+                command = request.data['command']
             except KeyError:
                 return JsonResponse(status=401, data={'status':'false',
-                        'message':'cart not complete'})
-            if complete_flag == 0:
-                return JsonResponse(status=401, data={'status':'false',
-                                        'message':'cart not complete'})
-            serializer = CartSerializer(data=request.data)
-            if serializer.is_valid():
+                            'message':'no command provided'})
 
-                cart = serializer.save()
+
+            if command == 'create':
+                print(request.data)
+                serializer = CartSerializer(data=request.data)
+                if serializer.is_valid():
+                    cart = serializer.save()
+                    id = cart.cart_id
+                    #cart.delete()
+                    #return card_id
+                    return JsonResponse({'cart_id':str(id)})
+                else:
+                    return JsonResponse(serializer.errors, status=400)
+
+            #add item to cart (one at a time, or many)
+            elif command == 'update':
+                serializer = ItemOrderSerializer(data=request.data)
+                if serializer.is_valid():
+                    try:
+                        cart_id = request.data['cart_id']
+                        print(cart_id)
+                        cart = Cart.objects.get(cart_id=cart_id)
+                    except KeyError:
+                        return JsonResponse(status=401, data={'status':'false',
+                                        'message':'cart not identified'})
+
+                    #check if cart was already completed
+                    if cart.cart_status == True:
+                        return JsonResponse(status=400, data={'message:Cart already completed'})
+
+                    #check if item already exists, if so, just update quantity
+                    new_item = serializer.save()
+
+                    old_items = cart.items.filter(title=new_item.title)
+                    title = new_item.title
+                    quantity = new_item.quantity
+
+                    #get item price also check if item is inventory
+                    try:
+                        price = Item.objects.get(title=new_item.title).price
+                    except Item.DoesNotExist:
+                        return JsonResponse({'message':'Item Does Not Exist'}, status=201)
+
+                    #check if item already exists
+                    if old_items:
+                        prev_item = old_items[0]
+                        prev_item.quantity += quantity
+                        prev_item.save()
+                        new_item.delete()
+                    else:
+                        print("new item")
+                        new_item.cart = cart
+                        new_item.save()
+
+                    #update cart value
+                    old_val = cart.total_val
+                    new_val = old_val + new_item.quantity*price
+                    cart.total_val = new_val
+                    cart.save()
+
+                    return JsonResponse(serializer.data, status=201)
+
+                else:
+                    return JsonResponse(serializer.errors, status=400)
+
+
+            elif command == 'complete':
+                print(request.data)
+                try:
+                    cart_id = request.data['cart_id']
+                    print(cart_id)
+                    cart = Cart.objects.get(cart_id=cart_id)
+                except KeyError:
+                    return JsonResponse(status=401, data={'status':'false',
+                                    'message':'no command provided'})
+
+                #check if cart was already completed
+                if cart.cart_status == True:
+                    return JsonResponse(status=304, data={'status':'false',
+                            'message':'Cart already completed'})
+
+                cart.cart_status = True
+                cart.save()
+                #update inventory:
                 items = cart.items.all()
 
+                #update inventory for each item
                 for item in items:
-                    #update quantities
-                    print(item.title)
-
-                    #update items in inventory
-                    try:
-                        inventory_item = Item.objects.get(title=item.title)
-                    except Item.DoesNotExist:
-                        return JsonResponse(status=400,  data={'status':'false',
-                                                'message':'Item not valid'})
-
+                    inventory_item = Item.objects.get(title=item.title)
                     diff = inventory_item.inventory_count - item.quantity
-
-                    if(diff<0):
-                        return JsonResponse(status=406,  data={'status':'false',
-                                                'message':'no inventory'})
-
                     inventory_item.inventory_count = diff
+                    print(inventory_item.inventory_count)
                     inventory_item.save()
 
-                    #return created entry status
-                return JsonResponse(serializer.data, status=201)
-
-            return JsonResponse(serializer.errors, status=406)
+                return JsonResponse(data={'message':'cart complete!'}, status=201)
 
         else:
             return JsonResponse(status=400,data={'status':'false',
