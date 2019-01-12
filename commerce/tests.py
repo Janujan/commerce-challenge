@@ -6,6 +6,10 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework.views import status
 from .models import Cart, Item, ItemOrder
 from .serializer import ItemOrderSerializer, ItemSerializer
+from rest_framework.test import APIRequestFactory, force_authenticate
+from django.contrib.auth import get_user_model
+
+
 import json
 import random
 
@@ -32,7 +36,8 @@ class BaseViewTest(APITestCase):
         self.create_Item('glue', 20.99, 0)
         self.create_Item('tape', 3.99, 0)
         self.create_Cart('test', 0, 0)
-
+        #user = User.objects.create_superuser(username="shopify", email="", password="testing21")
+        self.user = get_user_model().objects.create_user('shopify', '', 'test')
 
 class GetItemsTest(BaseViewTest):
 
@@ -40,9 +45,17 @@ class GetItemsTest(BaseViewTest):
         """
         Test getting all items through api call
         """
-        response = self.client.get(
-            reverse("commerce:itemlist", kwargs={'version':'v2'})
-        )
+        # user = User.objects.get(username='shopify')
+        #
+        # factory = APIRequestFactory()
+        # request = factory.get(reverse("commerce:itemlist", kwargs={'version':'v2'}))
+        #
+        # force_authenticate(request,user=user, token=None)
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(reverse("commerce:itemlist", kwargs={'version':'v2'}))
+
+        #print(response.json())
         # fetch the data from db
         expected = Item.objects.all()
         serialized = ItemSerializer(expected, many=True)
@@ -54,6 +67,7 @@ class GetItemsTest(BaseViewTest):
         """
         Test getting detail item through api call
         """
+        self.client.force_authenticate(user=self.user)
         items = Item.objects.all()
         index = random.randint(0, len(items)-1)
         name = items[index].title
@@ -72,6 +86,8 @@ class PurchasePostTest(BaseViewTest):
         """
         Ensure we can purchase one item on old version.
         """
+        self.client.force_authenticate(user=self.user)
+
         url = reverse('commerce:itemlist', kwargs={'version':'v1'})
         data = {'title': 'pen', 'quantity':2}
         response = self.client.post(url, data, format='json')
@@ -85,6 +101,8 @@ class PurchaseCartTest(BaseViewTest):
         """
         Ensure we can create a new account object.
         """
+        self.client.force_authenticate(user=self.user)
+
         url = reverse('commerce:itemlist', kwargs={'version':'v2'})
         new_cart = Cart.objects.all()
         new_cart.delete()
@@ -104,8 +122,12 @@ class PurchaseCartTest(BaseViewTest):
         """
         Ensure we can update a cart object.
         """
+        self.client.force_authenticate(user=self.user)
+
         url = reverse('commerce:itemlist', kwargs={'version':'v2'})
-        data = {'command':'update', 'cart_id':1, 'title':'pencil', 'quantity':5 }
+        cart = Cart.objects.all()
+
+        data = {'command':'update', 'cart_id':cart[0].cart_id, 'title':'pencil', 'quantity':5 }
         response = self.client.post(url, data, format='json')
 
         json_response = response.json()
@@ -118,9 +140,11 @@ class PurchaseCartTest(BaseViewTest):
         """
         Ensure we can complete a cart object.
         """
-        url = reverse('commerce:itemlist', kwargs={'version':'v2'})
+        self.client.force_authenticate(user=self.user)
 
-        data = {'command':'complete', 'cart_id':1 }
+        url = reverse('commerce:itemlist', kwargs={'version':'v2'})
+        cart = Cart.objects.all()
+        data = {'command':'complete', 'cart_id': cart[0].cart_id}
         response = self.client.post(url, data, format='json')
 
         json_response = response.json()
