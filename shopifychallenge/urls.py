@@ -16,8 +16,12 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from django.urls import include, path
+from rest_framework.authtoken import views
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('commerce/', include('commerce.urls')),
+    path('api-token-auth/', views.obtain_auth_token, name='api-token-auth'),
+
 ]

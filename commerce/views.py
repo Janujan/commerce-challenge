@@ -74,7 +74,38 @@ def itemList(request, version):
 
             elif command == 'complete':
                 print(request.data)
+<<<<<<< HEAD
                 return cartComplete(request)
+=======
+                try:
+                    cart_id = request.data['cart_id']
+                    print(cart_id)
+                    cart = Cart.objects.get(cart_id=cart_id)
+                except KeyError:
+                    return JsonResponse(status=401, data={'status':'false',
+                                    'message':'no command provided'})
+
+                #check if cart was already completed
+                if cart.cart_status == True:
+                    return JsonResponse(status=304, data={'status':'false',
+                            'message':'Cart already completed'})
+
+                cart.cart_status = True
+                cart.save()
+                #update inventory:
+                items = cart.items.all()
+
+                #update inventory for each item
+                for item in items:
+                    inventory_item = Item.objects.get(title=item.title)
+                    diff = inventory_item.inventory_count - item.quantity
+                    inventory_item.inventory_count = diff
+                    print(inventory_item.inventory_count)
+                    inventory_item.save()
+
+                return JsonResponse(data={'message':'cart complete!',
+                    'Total Value': cart.total_val}, status=201)
+>>>>>>> 3d1b27691a0795e25e2f0cf81a83ffbacec149b9
 
         else:
             return JsonResponse(status=400,data={'status':'false',
