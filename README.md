@@ -1,5 +1,5 @@
 # Shopify Commerce-Backend
-A bare-bones back-end implementation of an online marketplace as described by the Shopify Intern Developer Challenge.
+A bare-bones back-end implementation of an online marketplace as described by the Shopify Inten Developer Challenge.
 
 Table of Contents
 -----------------
@@ -9,6 +9,9 @@ Table of Contents
   * [Endpoints](#endpoints)
      * [Inventory List](#inventory-list)
      * [Inventory Detail](#inventory-detail)
+   * [Security](#security)
+   * [Setup](#setup)
+   * [Next Steps](#next-steps)
 
 ## Overview
 The purpose of this Django Web Application is to simulate an API for an online marketplace. My implementation uses a cart system to allow merchants to create, update and complete a cart object to organize customer purchases made to the marketplace back-end. The complete action for a cart can be considered the moment a customer has completed the transaction for the merchandise and allows the system to separate the financial transactions from the inventory management.
@@ -26,7 +29,7 @@ This endpoint is the most basic version of the API where a user 		can present an
 v2 supports the cart object. Inventory is only updated when the cart flow model is followed.
 
 ## Endpoints
-**Inventory List**
+### Inventory List
 `commerce/v#/?avail=1` 
 
 Methods supported:
@@ -35,6 +38,10 @@ Methods supported:
 This is the main endpoint to list all the items stored in the marketplace database. 
 
 The `GET` method lists all inventory. The query parameter `avail=1` results in only the available inventory to be returned (`inventory_count > 0`) .  In the absence of the query parameter, all inventory will be listed.
+
+Ex:
+`commerce/v1/?avail=1` 
+
 
 **v1 `POST`**
 
@@ -46,7 +53,7 @@ The `POST` method requires a key-value pair listing the item information as foll
   "quantity" : 100
 }
 ```
-If a successful operation occurs, the response recieved will be a relay of the items passed through. A successful transaction will result in the item inventory_count updating at the `GET` endpoint.
+If a successful operation occurs, the response received will be a relay of the items passed through. A successful transaction will result in the item inventory_count updating at the `GET` endpoint.
 
 *Note: If the quantity of an item passed through this point exceeds the inventory_count available for the item, the transaction will fail.*
 
@@ -62,6 +69,13 @@ A user must first create a cart using the create value. The user can also provid
 {
   "command" : "create",
   "cart_name" : "stationary"
+}
+```
+Below is the resultant response after a create post is made to the API. The cart_id must be retained for the following steps in the cart workflow.
+
+```javascript
+{
+  "cart_id" : 1
 }
 ```
 
@@ -83,7 +97,9 @@ Finally, once all items have been added to the cart, the user can call the `comp
   "cart_id" : 1
 }
 ```
- **Inventory Detail**
+
+------
+ ### Inventory Detail
 `commerce/v#/<str:title>/`
 
 Methods supported:
@@ -94,3 +110,27 @@ This API endpoint returns the item details for a given item title.
 Ex:
 `commerce/v2/pen/`
 
+## Security
+
+To prevent unauthorized access to the API endpoints, a token based authentication is integrated into the API. With every `GET` and `POST` call to the API, a bearer token needs to be sent along with the payload to ensure that the API accepts the methods. To receive a token, the user must do the following.
+
+The user must provide their account credentials as a key-value pair in the body of their request as shown below:
+```javascript
+{
+	'username': 'user1',
+	'password': 'userpassword'
+}
+```
+The request must then be made to the url: `api-token-auth/`. The user must than store the token that is passed as a response. An example of the response can be seen below:
+```javascript
+{
+	'token': 'FEXqE3YL2U9CSdUVmMAGYW2OKMHoBx',
+}
+```
+
+## Setup
+
+Details to an example script that performs the basic funcationality can be found in `setup_example.py`.
+
+
+## Next Steps
