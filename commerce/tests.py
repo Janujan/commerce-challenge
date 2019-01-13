@@ -47,13 +47,6 @@ class GetItemsTest(BaseViewTest):
         """
         Test getting all items through api call
         """
-        # user = User.objects.get(username='shopify')
-        #
-        # factory = APIRequestFactory()
-        # request = factory.get(reverse("commerce:itemlist", kwargs={'version':'v2'}))
-        #
-        # force_authenticate(request,user=user, token=None)
-
         self.client.force_authenticate(user=self.user)
         response = self.client.get(reverse("commerce:itemlist", kwargs={'version':'v2'}))
 
@@ -127,14 +120,9 @@ class PurchaseCartTest(BaseViewTest):
         self.client.force_authenticate(user=self.user)
 
         url = reverse('commerce:itemlist', kwargs={'version':'v2'})
-<<<<<<< HEAD
         cart_id = Cart.objects.all()[0].cart_id
         data = {'command':'update', 'cart_id':cart_id, 'title':'pencil', 'quantity':5 }
-=======
-        cart = Cart.objects.all()
 
-        data = {'command':'update', 'cart_id':cart[0].cart_id, 'title':'pencil', 'quantity':5 }
->>>>>>> 3d1b27691a0795e25e2f0cf81a83ffbacec149b9
         response = self.client.post(url, data, format='json')
 
         json_response = response.json()
@@ -147,17 +135,10 @@ class PurchaseCartTest(BaseViewTest):
         """
         Ensure we can complete a cart object.
         """
-<<<<<<< HEAD
         url = reverse('commerce:itemlist', kwargs={'version':'v2'})
         cart_id = Cart.objects.all()[0].cart_id
         data = {'command':'complete', 'cart_id':cart_id }
-=======
         self.client.force_authenticate(user=self.user)
-
-        url = reverse('commerce:itemlist', kwargs={'version':'v2'})
-        cart = Cart.objects.all()
-        data = {'command':'complete', 'cart_id': cart[0].cart_id}
->>>>>>> 3d1b27691a0795e25e2f0cf81a83ffbacec149b9
         response = self.client.post(url, data, format='json')
 
         json_response = response.json()
