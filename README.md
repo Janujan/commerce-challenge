@@ -42,6 +42,20 @@ The `GET` method lists all inventory. The query parameter `avail=1` results in o
 Ex:
 `commerce/v1/?avail=1` 
 
+```javascript
+[
+    {
+        "title": "pen",
+        "price": 1.99,
+        "inventory_count": 120
+    },
+    {
+        "title": "shirt",
+        "price": 10.99,
+        "inventory_count": 167
+    },
+]    
+```
 
 **v1 `POST`**
 
@@ -97,8 +111,13 @@ Finally, once all items have been added to the cart, the user can call the `comp
   "cart_id" : 1
 }
 ```
-
-------
+Once the cart has been completed, the return json response will detail the total value of the cart at the time of completion. 
+```javascript
+{
+  "message" : "cart complete!",
+  "Total Value" : 14.95
+}
+```
  ### Inventory Detail
 `commerce/v#/<str:title>/`
 
@@ -109,6 +128,13 @@ This API endpoint returns the item details for a given item title.
 
 Ex:
 `commerce/v2/pen/`
+```javascript
+{
+    "title": "pen",
+    "price": 1.99,
+    "inventory_count": 120
+}
+```
 
 ## Security
 
@@ -124,13 +150,18 @@ The user must provide their account credentials as a key-value pair in the body 
 The request must then be made to the url: `api-token-auth/`. The user must than store the token that is passed as a response. An example of the response can be seen below:
 ```javascript
 {
-	'token': 'FEXqE3YL2U9CSdUVmMAGYW2OKMHoBx',
+	'token': 'd525e2211d3a8ad0044fdf289299f5ec7b1abca7'
 }
 ```
+With the token acquired, every call to the API needs to have the following key-value pair in the header of request.
 
+```javascript
+{
+	'Authorization': 'Token d525e2211d3a8ad0044fdf289299f5ec7b1abca7'
+}
+```
 ## Setup
 
-Details to an example script that performs the basic funcationality can be found in `setup_example.py`.
-
+Details to an example script that performs the basic funcationality can be found in `v1_example.py`. The cart workflow can be found in `v2_example.py`.
 
 ## Next Steps
