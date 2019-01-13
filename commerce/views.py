@@ -149,7 +149,8 @@ def itemList(request, version):
                     print(inventory_item.inventory_count)
                     inventory_item.save()
 
-                return JsonResponse(data={'message':'cart complete!'}, status=201)
+                return JsonResponse(data={'message':'cart complete!',
+                    'Total Value': cart.total_val}, status=201)
 
         else:
             return JsonResponse(status=400,data={'status':'false',

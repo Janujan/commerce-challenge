@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='cart',
             name='cart_id',
-            field=models.AutoField(default=2, max_length=30, primary_key=True, serialize=False),
+            field=models.AutoField(max_length=30, primary_key=True, serialize=False),
             preserve_default=False,
         ),
         migrations.AddField(
