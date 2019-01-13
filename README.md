@@ -1,5 +1,5 @@
 # Shopify Commerce-Backend
-A bare-bones back-end implementation of an online marketplace as described by the Shopify Inten Developer Challenge.
+A bare-bones back-end implementation of an online marketplace as described by the Shopify Intern Developer Challenge.
 
 Table of Contents
 -----------------
