@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='cart',
             name='cart_name',
-            field=models.CharField(default=1, max_length=200),
+            field=models.CharField(max_length=200),
             preserve_default=False,
         ),
         migrations.AddField(

@@ -95,7 +95,7 @@ class PurchaseCartTest(BaseViewTest):
         json_response = response.json()
         cart_id = int(json_response['cart_id'])
 
-
+        print(cart_id)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Cart.objects.count(), 1)
         self.assertEqual(Cart.objects.get().cart_id, cart_id)
@@ -105,7 +105,8 @@ class PurchaseCartTest(BaseViewTest):
         Ensure we can update a cart object.
         """
         url = reverse('commerce:itemlist', kwargs={'version':'v2'})
-        data = {'command':'update', 'cart_id':1, 'title':'pencil', 'quantity':5 }
+        cart_id = Cart.objects.all()[0].cart_id
+        data = {'command':'update', 'cart_id':cart_id, 'title':'pencil', 'quantity':5 }
         response = self.client.post(url, data, format='json')
 
         json_response = response.json()
@@ -119,8 +120,8 @@ class PurchaseCartTest(BaseViewTest):
         Ensure we can complete a cart object.
         """
         url = reverse('commerce:itemlist', kwargs={'version':'v2'})
-
-        data = {'command':'complete', 'cart_id':1 }
+        cart_id = Cart.objects.all()[0].cart_id
+        data = {'command':'complete', 'cart_id':cart_id }
         response = self.client.post(url, data, format='json')
 
         json_response = response.json()
