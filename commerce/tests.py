@@ -25,9 +25,6 @@ class BaseViewTest(APITestCase):
     def create_Cart(name, total_val, status ):
         cart = Cart.objects.create(cart_name=name, total_val=total_val,
             cart_status=status)
-        cart.items.create('pen',10)
-        cart.items.create('pencil', 20)
-
 
     def setUp(self):
         # add test data
@@ -137,6 +134,22 @@ class PurchaseCartTest(BaseViewTest):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(ItemOrder.objects.count(), 1)
         self.assertEqual(ItemOrder.objects.get().title, 'pencil')
+
+    def test_update_Cart_fail(self):
+        """
+        Ensure we cant update a cart object when quantity > inventory_count.
+        """
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse('commerce:itemlist', kwargs={'version':'v2'})
+        cart = Cart.objects.all()
+
+        data = {'command':'update', 'cart_id':cart[0].cart_id, 'title':'pen', 'quantity':201 }
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(ItemOrder.objects.count(), 0)
+
 
     def test_complete_Cart(self):
         """

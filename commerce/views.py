@@ -94,11 +94,23 @@ def itemList(request, version):
 
                     #get item price also check if item is inventory
                     try:
-                        price = Item.objects.get(title=new_item.title).price
+                        inventory_itm = Item.objects.get(title=new_item.title)
+                        price = inventory_itm.price
+                        inventory_cnt = inventory_itm.inventory_count
                     except Item.DoesNotExist:
-                        return JsonResponse({'message':'Item Does Not Exist'}, status=201)
+                        new_item.delete()
+                        return JsonResponse({'message':'Item Does Not Exist'},
+                                                        status=406)
 
-                    #check if item already exists
+
+                    #check if quantity exceeds inventory_count
+                    print("inventory_cnt")
+                    print(inventory_cnt)
+                    if quantity > inventory_cnt:
+                        new_item.delete()
+                        return JsonResponse({'message':'Quantity too high'},
+                                                        status=406)
+                    #check if item already exists in the cart
                     if old_items:
                         prev_item = old_items[0]
                         prev_item.quantity += quantity
