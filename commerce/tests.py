@@ -23,8 +23,10 @@ class BaseViewTest(APITestCase):
             Item.objects.create(title=title, price=price, inventory_count=quantity)
     @staticmethod
     def create_Cart(name, total_val, status ):
-        Cart.objects.create(cart_name=name, total_val=total_val,
+        cart = Cart.objects.create(cart_name=name, total_val=total_val,
             cart_status=status)
+        cart.items.create('pen',10)
+        cart.items.create('pencil', 20)
 
 
     def setUp(self):
