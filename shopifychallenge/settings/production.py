@@ -29,7 +29,7 @@ STATICFILES_DIRS = (
 SECRET_KEY = '*f6tc=76=zocykpfykpoo)6un+xfqyplw%dvtrbo)8d&)u!5be'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS =  ['shopify-janujan.herokuapp.com/']
 
