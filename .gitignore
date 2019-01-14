@@ -6,6 +6,8 @@ sending_data.py
 
 .DS_STORE
 
+local.py
+
 __pycache__/
 *.py[cod]
 *$py.class
