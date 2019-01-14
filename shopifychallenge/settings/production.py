@@ -31,7 +31,7 @@ SECRET_KEY = '*f6tc=76=zocykpfykpoo)6un+xfqyplw%dvtrbo)8d&)u!5be'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS =  ['shopify-janujan.herokuapp.com/']
+ALLOWED_HOSTS =  ['shopify-janujan.herokuapp.com']
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'SOME+RANDOM+KEY(*f6tc=76=zocykpfykpoo)6un+xfqyplw%dvtrbo)8d&)u!5be')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
