@@ -14,7 +14,6 @@ def itemList(request, version):
     if request.method == 'GET':
         items = Item.objects.all()
 
-        print(request.query_params)
         if(request.query_params.get('avail')):
             avail = int(request.query_params.get('avail'))
             items = Item.objects.filter(inventory_count__gt=0)
@@ -23,7 +22,6 @@ def itemList(request, version):
     elif request.method =='POST':
         # Purchase an item
         if version == 'v1':
-            print(version)
             serializer = ItemOrderSerializer(data=request.data)
             if serializer.is_valid():
                 item_order = serializer.save()
@@ -31,7 +29,9 @@ def itemList(request, version):
                 try:
                     item = Item.objects.get(title=item_order.title)
                 except Item.DoesNotExist:
-                    return HttpResponse(status=400)
+                    item_order.delete()
+                    return JsonResponse(status=400, data={'status':'false',
+                                'message':'Item doesnt exist'})
 
                 diff = item.inventory_count - item_order.quantity
 
@@ -58,7 +58,6 @@ def itemList(request, version):
 
 
             if command == 'create':
-                print(request.data)
                 serializer = CartSerializer(data=request.data)
                 if serializer.is_valid():
                     return cartCreate(serializer)
@@ -73,8 +72,6 @@ def itemList(request, version):
                     return JsonResponse(serializer.errors, status=400)
 
             elif command == 'complete':
-                print(request.data)
-
                 return cartComplete(request)
 
 
@@ -87,7 +84,6 @@ def detailItem(request, name, version):
     try:
         #perform some item cleaning
         clean_name = name.lower()
-        print(clean_name)
         item = Item.objects.get(title=clean_name)
     except Item.DoesNotExist:
         return HttpResponse(status=400)

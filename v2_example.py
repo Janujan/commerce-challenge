@@ -34,7 +34,7 @@ if __name__=="__main__":
     username = 'shopify'
     password = 'testing12'
 
-    url = "http://localhost:8000/api-token-auth/"
+    url = "http://shopify-janujan.herokuapp.com/api-token-auth/"
     body = { 'username':username , 'password':password }
     jsondata = json.dumps(body)
     headers = {'Content-type': 'application/json; charset=utf-8'}
@@ -44,7 +44,7 @@ if __name__=="__main__":
     print(token)
 
     #create cart
-    url = "http://localhost:8000/commerce/v2/"
+    url = "http://shopify-janujan.herokuapp.com/commerce/v2/"
     cart_id = createCart(url, token)
     print(cart_id)
 

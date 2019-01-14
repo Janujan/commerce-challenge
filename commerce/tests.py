@@ -19,7 +19,7 @@ class BaseViewTest(APITestCase):
 
     @staticmethod
     def create_Item(title, price, quantity ):
-        if title != "" and price != 0 and quantity !=0:
+        if title != "" and price != 0 and quantity >=0:
             Item.objects.create(title=title, price=price, inventory_count=quantity)
     @staticmethod
     def create_Cart(name, total_val, status ):
@@ -32,8 +32,8 @@ class BaseViewTest(APITestCase):
         self.create_Item('pen', 2.99, 100)
         self.create_Item('pencil', 5.99, 200)
         self.create_Item('paper', 1.99, 150)
-        self.create_Item('erasor', 10.99, 19)
         self.create_Item('glue', 20.99, 0)
+        self.create_Item('erasor', 10.99, 19)
         self.create_Item('tape', 3.99, 0)
         self.create_Cart('test', 0, 0)
         #user = User.objects.create_superuser(username="shopify", email="", password="testing21")
@@ -48,13 +48,33 @@ class GetItemsTest(BaseViewTest):
         self.client.force_authenticate(user=self.user)
         response = self.client.get(reverse("commerce:itemlist", kwargs={'version':'v2'}))
 
-        #print(response.json())
         # fetch the data from db
         expected = Item.objects.all()
         serialized = ItemSerializer(expected, many=True)
         self.assertEqual(response.json(), serialized.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_avail_items(self):
+        """
+        Test getting all items through api call
+        """
+        self.client.force_authenticate(user=self.user)
+        url = reverse("commerce:itemlist", kwargs={'version':'v1'})
+        response = self.client.get(url+'?avail=1')
+        # fetch the data from db
+        expected = Item.objects.filter(inventory_count__gt = 0)
+        serialized = ItemSerializer(expected, many=True)
+        self.assertEqual(response.json(), serialized.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+        url = reverse("commerce:itemlist", kwargs={'version':'v2'})
+        response = self.client.get(url+'?avail=1')
+        # fetch the data from db
+        expected = Item.objects.filter(inventory_count__gt = 0)
+        serialized = ItemSerializer(expected, many=True)
+        self.assertEqual(response.json(), serialized.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_detail_item(self):
         """
@@ -89,6 +109,28 @@ class PurchasePostTest(BaseViewTest):
         self.assertEqual(ItemOrder.objects.get().title, 'pen')
 
 
+    def test_create_ItemOrder_fail(self):
+        """
+        Ensure we can purchase one item on old version.
+        """
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse('commerce:itemlist', kwargs={'version':'v1'})
+        data = {'title': 'pen', 'quantity':102}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(ItemOrder.objects.count(), 0)
+
+
+        url = reverse('commerce:itemlist', kwargs={'version':'v1'})
+        data = {'title': 'square', 'quantity':1}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(ItemOrder.objects.count(), 0)
+
+
+
+
 class PurchaseCartTest(BaseViewTest):
     def test_create_Cart(self):
         """
@@ -106,7 +148,6 @@ class PurchaseCartTest(BaseViewTest):
         json_response = response.json()
         cart_id = int(json_response['cart_id'])
 
-        print(cart_id)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Cart.objects.count(), 1)
         self.assertEqual(Cart.objects.get().cart_id, cart_id)
@@ -129,11 +170,57 @@ class PurchaseCartTest(BaseViewTest):
         self.assertEqual(ItemOrder.objects.count(), 1)
         self.assertEqual(ItemOrder.objects.get().title, 'pencil')
 
+    def test_update_Cart_fail(self):
+        """
+        Ensure we cant update a cart object with bad data.
+        """
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse('commerce:itemlist', kwargs={'version':'v2'})
+        data = {'command':'update', 'cart_id':'string', 'title':'pencil', 'quantity':5 }
+
+        response = self.client.post(url, data, format='json')
+
+        json_response = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(ItemOrder.objects.count(), 0)
+
+
+        #quantity > inventory_count
+        cart_id = Cart.objects.all()[0].cart_id
+        cart_val = Cart.objects.all()[0].total_val
+        data = {'command':'update', 'cart_id':cart_id, 'title':'pencil', 'quantity':1000 }
+
+        response = self.client.post(url, data, format='json')
+
+        json_response = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(ItemOrder.objects.count(), 0)
+        self.assertEqual(Cart.objects.all()[0].total_val, cart_val)
+
+
+        #bad title
+        cart_id = Cart.objects.all()[0].cart_id
+        cart_val = Cart.objects.all()[0].total_val
+        data = {'command':'update', 'cart_id':cart_id, 'title':'testing', 'quantity':1 }
+
+        response = self.client.post(url, data, format='json')
+
+        json_response = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(ItemOrder.objects.count(), 0)
+        self.assertEqual(Cart.objects.all()[0].total_val, cart_val)
+
+
     def test_complete_Cart(self):
         """
         Ensure we can complete a cart object.
         """
         url = reverse('commerce:itemlist', kwargs={'version':'v2'})
+
         cart_id = Cart.objects.all()[0].cart_id
         data = {'command':'complete', 'cart_id':cart_id }
         self.client.force_authenticate(user=self.user)
@@ -144,3 +231,46 @@ class PurchaseCartTest(BaseViewTest):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Cart.objects.count(), 1)
         self.assertEqual(Cart.objects.get().cart_status, 1)
+
+
+    def test_complete_Cart_fail(self):
+        """
+        Ensure that cart fails when already completed and if cart doesnt exist.
+        """
+        url = reverse('commerce:itemlist', kwargs={'version':'v2'})
+
+        cart_id = Cart.objects.all()[0].cart_id
+        data = {'command':'complete', 'cart_id':cart_id }
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(url, data, format='json')
+
+        json_response = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Cart.objects.count(), 1)
+        self.assertEqual(Cart.objects.get().cart_status, 1)
+
+        # cart already complete
+        data = {'command':'complete', 'cart_id':cart_id }
+        response = self.client.post(url, data, format='json')
+
+        json_response = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Cart.objects.get().cart_status, 1)
+
+        #cart doesnt exist
+        data = {'command':'complete', 'cart_id':1 }
+        response = self.client.post(url, data, format='json')
+
+        json_response = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        #dont set cart_id parameter
+        data = {'command':'complete' }
+        response = self.client.post(url, data, format='json')
+
+        json_response = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

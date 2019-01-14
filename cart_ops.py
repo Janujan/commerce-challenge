@@ -1,7 +1,7 @@
 from commerce.models import Cart, ItemOrder, Item
 from commerce.serializer import CartSerializer, ItemOrderSerializer, ItemSerializer
 from django.http import HttpResponse, JsonResponse
-
+import six
 def cartCreate( serializer ):
 	cart = serializer.save()
 	id = cart.cart_id
@@ -11,16 +11,18 @@ def cartCreate( serializer ):
 def cartUpdate( serializer, request ):
 	try:
 		cart_id = request.data['cart_id']
-		print('cart_id in update')
-		print(Cart.objects.all()[0].cart_id)
+		#ensure that cart is a number
+		if isinstance(cart_id, six.string_types):
+	 		raise KeyError('string input as cart_id')
+
 		cart = Cart.objects.get(cart_id=cart_id)
 	except KeyError:
-		return JsonResponse(status=401, data={'status':'false',
+		return JsonResponse(status=400, data={'status':'false',
 						'message':'cart not identified'})
 
 	#check if cart was already completed
 	if cart.cart_status == True:
-		return JsonResponse(status=400, data={'message:Cart already completed'})
+		return JsonResponse(status=400, data={'message':'Cart already completed'})
 
 	#check if item already exists, if so, just update quantity
 	new_item = serializer.save()
@@ -32,8 +34,20 @@ def cartUpdate( serializer, request ):
 	#get item price also check if item is inventory
 	try:
 		price = Item.objects.get(title=new_item.title).price
+		inventory_count = Item.objects.get(title=new_item.title).inventory_count
+
 	except Item.DoesNotExist:
-		return JsonResponse({'message':'Item Does Not Exist'}, status=201)
+		new_item.delete()
+		return JsonResponse({'message':'Item Does Not Exist'}, status=400)
+
+
+	if old_items:
+		quantity += old_items[0].quantity
+
+	#check if quantity is being exceeded
+	if quantity > inventory_count:
+		new_item.delete()
+		return JsonResponse(status=400, data={'message':'quantity is too high'})
 
 	#check if item already exists
 	if old_items:
@@ -42,9 +56,11 @@ def cartUpdate( serializer, request ):
 		prev_item.save()
 		new_item.delete()
 	else:
-		print("new item")
 		new_item.cart = cart
 		new_item.save()
+
+
+
 
 	#update cart value
 	old_val = cart.total_val
@@ -58,17 +74,16 @@ def cartUpdate( serializer, request ):
 def cartComplete( request ):
 	try:
 		cart_id = request.data['cart_id']
-		print('cart id')
-		print(cart_id)
-		print(Cart.objects.all()[0].cart_id)
 		cart = Cart.objects.get(cart_id=cart_id)
+	except Cart.DoesNotExist:
+		return JsonResponse(status=400, data={'status':'false',
+									'message':'cart id error'})
 	except KeyError:
-		return JsonResponse(status=401, data={'status':'false',
-									'message':'no command provided'})
-
+			return JsonResponse(status=400, data={'status':'false',
+										'message':'cart id error'})
 	#check if cart was already completed
 	if cart.cart_status == True:
-		return JsonResponse(status=304, data={'status':'false',
+		return JsonResponse(status=400, data={'status':'false',
 								'message':'Cart already completed'})
 	cart.cart_status = True
 	cart.save()
