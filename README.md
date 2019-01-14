@@ -165,3 +165,7 @@ With the token acquired, every call to the API needs to have the following key-v
 Details to an example script that performs the basic funcationality can be found in `v1_example.py`. The cart workflow can be found in `v2_example.py`.
 
 ## Next Steps
+
+* Add a nice looking front-end 
+* Integrate OAuth2.0
+* Look into porting system with GraphQL
