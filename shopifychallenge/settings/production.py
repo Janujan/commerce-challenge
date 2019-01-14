@@ -33,7 +33,7 @@ DEBUG = False
 
 ALLOWED_HOSTS =  ['shopify-janujan.herokuapp.com/']
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'SOME+RANDOM+KEY(z9+3vnm(jb0u@&w68t#5_e8s9-lbfhv-')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'SOME+RANDOM+KEY(*f6tc=76=zocykpfykpoo)6un+xfqyplw%dvtrbo)8d&)u!5be')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 
