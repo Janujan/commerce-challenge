@@ -222,6 +222,7 @@ class PurchaseCartTest(BaseViewTest):
         url = reverse('commerce:itemlist', kwargs={'version':'v2'})
 
         cart_id = Cart.objects.all()[0].cart_id
+
         data = {'command':'complete', 'cart_id':cart_id }
         self.client.force_authenticate(user=self.user)
         response = self.client.post(url, data, format='json')
@@ -231,7 +232,7 @@ class PurchaseCartTest(BaseViewTest):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Cart.objects.count(), 1)
         self.assertEqual(Cart.objects.get().cart_status, 1)
-
+        self.assertEqual(Cart.objects.get().total_val, json_response['Total Value'])
 
     def test_complete_Cart_fail(self):
         """

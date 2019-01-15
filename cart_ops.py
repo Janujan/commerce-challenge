@@ -97,4 +97,4 @@ def cartComplete( request ):
 		inventory_item.inventory_count = diff
 		inventory_item.save()
 
-	return JsonResponse(data={'message':'cart complete!'}, status=201)
+	return JsonResponse(data={'message':'cart complete!', 'Total Value': cart.total_val}, status=201)
