@@ -22,11 +22,11 @@ There are two versions of the API that are available on this web application.
 
 `commerce/v1/`
 
-This endpoint is the most basic version of the API where a user 		can present an item and quantity and the inventory is adjusted immediately.
+This endpoint is the most basic version of the API where a user can present an item and quantity and the inventory is adjusted immediately.
 
 `commerce/v2/`
 
-v2 supports the cart object. Inventory is only updated when the cart flow model is followed.
+v2 supports the cart object. Inventory is only updated when the cart work flow is followed.
 
 ## Endpoints
 ### Inventory List
@@ -69,7 +69,7 @@ The `POST` method requires a key-value pair listing the item information as foll
 ```
 If a successful operation occurs, the response received will be a relay of the items passed through. A successful transaction will result in the item inventory_count updating at the `GET` endpoint.
 
-*Note: If the quantity of an item passed through this point exceeds the inventory_count available for the item, the transaction will fail.*
+*Note: If the quantity of an item passed through this endpoint exceeds the inventory_count available for the item, the operation will fail.*
 
 
 **v2 `POST`**
@@ -103,6 +103,9 @@ Once a cart has been provisioned, users can add items to the cart via the `updat
   "quantity" : 5
 }
 ```
+
+*Note: If the quantity of an item order passed through this endpoint exceeds the inventory_count available for the item, the update will fail.*
+
 *`complete`*
 Finally, once all items have been added to the cart, the user can call the `complete` command and provide the cart  id. Once a cart has been completed, the inventory counts are updated and the cart can no longer be updated.
 ```javascript
@@ -118,6 +121,9 @@ Once the cart has been completed, the return json response will detail the total
   "Total Value" : 14.95
 }
 ```
+
+*Note: A cart can only be completed once. An attempt at updating the cart, or completing the cart again will fail.*
+
  ### Inventory Detail
 `commerce/v#/<str:title>/`
 
