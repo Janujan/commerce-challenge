@@ -17,12 +17,12 @@ def cartUpdate( serializer, request ):
 
 		cart = Cart.objects.get(cart_id=cart_id)
 	except KeyError:
-		return JsonResponse(status=400, data={'status':'false',
+		return JsonResponse(status=400, data={'status':'error',
 						'message':'cart not identified'})
 
 	#check if cart was already completed
 	if cart.cart_status == True:
-		return JsonResponse(status=400, data={'message':'Cart already completed'})
+		return JsonResponse(status=400, data={'status':'error','message':'Cart already completed'})
 
 	#check if item already exists, if so, just update quantity
 	new_item = serializer.save()
@@ -38,7 +38,7 @@ def cartUpdate( serializer, request ):
 
 	except Item.DoesNotExist:
 		new_item.delete()
-		return JsonResponse({'message':'Item Does Not Exist'}, status=400)
+		return JsonResponse({'status':'error','message':'Item Does Not Exist'}, status=400)
 
 
 	if old_items:
@@ -47,7 +47,8 @@ def cartUpdate( serializer, request ):
 	#check if quantity is being exceeded
 	if quantity > inventory_count:
 		new_item.delete()
-		return JsonResponse(status=400, data={'message':'quantity is too high'})
+		return JsonResponse(status=400, data={'status':'error',
+										'message':'quantity is too high'})
 
 	#check if item already exists
 	if old_items:
@@ -76,14 +77,14 @@ def cartComplete( request ):
 		cart_id = request.data['cart_id']
 		cart = Cart.objects.get(cart_id=cart_id)
 	except Cart.DoesNotExist:
-		return JsonResponse(status=400, data={'status':'false',
+		return JsonResponse(status=400, data={'status':'error',
 									'message':'cart id error'})
 	except KeyError:
-			return JsonResponse(status=400, data={'status':'false',
+			return JsonResponse(status=400, data={'status':'error',
 										'message':'cart id error'})
 	#check if cart was already completed
 	if cart.cart_status == True:
-		return JsonResponse(status=400, data={'status':'false',
+		return JsonResponse(status=400, data={'status':'error',
 								'message':'Cart already completed'})
 	cart.cart_status = True
 	cart.save()

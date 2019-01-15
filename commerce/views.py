@@ -30,7 +30,7 @@ def itemList(request, version):
                     item = Item.objects.get(title=item_order.title)
                 except Item.DoesNotExist:
                     item_order.delete()
-                    return JsonResponse(status=400, data={'status':'false',
+                    return JsonResponse(status=400, data={'status':'error',
                                 'message':'Item doesnt exist'})
 
                 diff = item.inventory_count - item_order.quantity
@@ -39,7 +39,7 @@ def itemList(request, version):
                 #delete order and return not acceptable
                 if diff < 0:
                     item_order.delete()
-                    return JsonResponse(serializer.errors,status=406)
+                    return JsonResponse(data={'status':'error','message':'quantity too high'},status=400)
 
                 item.inventory_count = diff
                 item.save()
@@ -47,13 +47,13 @@ def itemList(request, version):
                 #return created entry status
                 return JsonResponse(serializer.data, status=201)
 
-            return JsonResponse(serializer.errors, status=406)
+            return JsonResponse(serializer.errors, status=400)
         elif version == 'v2':
             #check command: create, update, complete
             try:
                 command = request.data['command']
             except KeyError:
-                return JsonResponse(status=401, data={'status':'false',
+                return JsonResponse(status=401, data={'status':'error',
                             'message':'no command provided'})
 
 
@@ -76,7 +76,7 @@ def itemList(request, version):
 
 
         else:
-            return JsonResponse(status=400,data={'status':'false',
+            return JsonResponse(status=400,data={'status':'error',
             'message':'no version specified'} )
 
 @api_view(['GET'])

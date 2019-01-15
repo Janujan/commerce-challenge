@@ -118,13 +118,16 @@ class PurchasePostTest(BaseViewTest):
         url = reverse('commerce:itemlist', kwargs={'version':'v1'})
         data = {'title': 'pen', 'quantity':102}
         response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        print(response.json())
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(ItemOrder.objects.count(), 0)
 
 
         url = reverse('commerce:itemlist', kwargs={'version':'v1'})
         data = {'title': 'square', 'quantity':1}
         response = self.client.post(url, data, format='json')
+        print(response.json())
+
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(ItemOrder.objects.count(), 0)
 
