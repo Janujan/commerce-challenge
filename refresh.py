@@ -28,5 +28,5 @@ item_quantities = [ 1000, 77, 0, 7, 0, 1111, 950, 667, 0, 41 ]
 
 item_prices = [ 7.99, 5.99, 4.89, 5.70, 6.80, 2.99, 1.77, 8.20, 1.20, 4.20 ]
 
-#freshLoad(item_names, item_quantities, item_prices)
-reLoad(item_names, item_quantities, item_prices)
+freshLoad(item_names, item_quantities, item_prices)
+#reLoad(item_names, item_quantities, item_prices)
