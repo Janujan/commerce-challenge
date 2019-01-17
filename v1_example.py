@@ -49,26 +49,16 @@ if __name__=="__main__":
     token = response.json()['token']
     print(token)
 
-    #create cart
     url = "http://shopify-janujan.herokuapp.com/commerce/v1/"
 
-    start_time = time.time()
     items = getItemList(url, token)
-    print('items_time')
-    itemList_time = time.time()-start_time
-    print(itemList_time)
+    print(items)
 
-    start_time = time.time()
     item = getDetailItem(url, token)
-    print('detail_item_time')
-    detail_time = time.time() - start_time
-    print(detail_time)
+    print(item)
 
-    start_time = time.time()
-    print('avail_time')
     items = getAvailableItem(url, token)
-    avail_time = time.time() - start_time
-    print(avail_time)
+    print(items)
 
     #purchaseItem(url, token)
     #items = getItemList(url, token)
