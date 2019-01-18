@@ -2,11 +2,11 @@ from commerce.models import Cart, ItemOrder, Item
 from commerce.serializer import CartSerializer, ItemOrderSerializer, ItemSerializer
 from django.http import HttpResponse, JsonResponse
 import six
+
 def cartCreate( serializer ):
 	cart = serializer.save()
 	id = cart.cart_id
 	return JsonResponse({'cart_id':str(id)})
-
 
 def cartUpdate( serializer, request ):
 	try:
@@ -59,9 +59,6 @@ def cartUpdate( serializer, request ):
 	else:
 		new_item.cart = cart
 		new_item.save()
-
-
-
 
 	#update cart value
 	old_val = cart.total_val

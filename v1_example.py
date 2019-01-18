@@ -1,5 +1,6 @@
 import json
 import requests
+import time
 
 def getItemList(url, token):
     headers = {'Content-type': 'application/json; charset=utf-8',
@@ -48,9 +49,7 @@ if __name__=="__main__":
     token = response.json()['token']
     print(token)
 
-    #create cart
     url = "http://shopify-janujan.herokuapp.com/commerce/v1/"
-
 
     items = getItemList(url, token)
     print(items)
@@ -61,6 +60,6 @@ if __name__=="__main__":
     items = getAvailableItem(url, token)
     print(items)
 
-    purchaseItem(url, token)
-    items = getItemList(url, token)
-    print(items)
+    #purchaseItem(url, token)
+    #items = getItemList(url, token)
+    #print(items)

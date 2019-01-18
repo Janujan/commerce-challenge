@@ -12,6 +12,10 @@ from cart_ops import cartCreate, cartUpdate, cartComplete
 @api_view(['GET', 'POST'])
 def itemList(request, version):
     if request.method == 'GET':
+        '''
+        Return a list of all items depending on query string
+        '''
+
         items = Item.objects.all()
 
         if(request.query_params.get('avail')):
@@ -19,27 +23,37 @@ def itemList(request, version):
             items = Item.objects.filter(inventory_count__gt=0)
         serializer = ItemSerializer(items,many=True)
         return JsonResponse(serializer.data, safe=False)
+
+
     elif request.method =='POST':
-        # Purchase an item
         if version == 'v1':
+            '''
+            Purchase a single item
+            '''
+
             serializer = ItemOrderSerializer(data=request.data)
             if serializer.is_valid():
                 item_order = serializer.save()
 
                 try:
                     item = Item.objects.get(title=item_order.title)
+
                 except Item.DoesNotExist:
                     item_order.delete()
-                    return JsonResponse(status=400, data={'status':'error',
-                                'message':'Item doesnt exist'})
+                    return JsonResponse(data={
+                                'status':'error',
+                                'message':'Item doesnt exist'
+                                }, status=400)
 
                 diff = item.inventory_count - item_order.quantity
 
                 #situation where requested quantity is too high
-                #delete order and return not acceptable
                 if diff < 0:
                     item_order.delete()
-                    return JsonResponse(data={'status':'error','message':'quantity too high'},status=400)
+                    return JsonResponse(data={
+                            'status':'error',
+                            'message':'quantity too high'
+                            }, status=400)
 
                 item.inventory_count = diff
                 item.save()
@@ -49,12 +63,20 @@ def itemList(request, version):
 
             return JsonResponse(serializer.errors, status=400)
         elif version == 'v2':
-            #check command: create, update, complete
+            '''
+            Cart Posting
+            Needs to have one of the following commands:
+            - create
+            - update
+            - complete
+            '''
             try:
                 command = request.data['command']
             except KeyError:
-                return JsonResponse(status=401, data={'status':'error',
-                            'message':'no command provided'})
+                return JsonResponse(data={
+                            'status':'error',
+                            'message':'no command provided'
+                            }, status=401)
 
 
             if command == 'create':
@@ -76,15 +98,21 @@ def itemList(request, version):
 
 
         else:
-            return JsonResponse(status=400,data={'status':'error',
-            'message':'no version specified'} )
+            return JsonResponse(data={
+                        'status':'error',
+                        'message':'no version specified'
+                        }, status=400 )
 
 @api_view(['GET'])
 def detailItem(request, name, version):
+    '''
+    Return a single item depending on name that is passed
+    '''
     try:
-        #perform some item cleaning
+        #perform some item name cleaning
         clean_name = name.lower()
         item = Item.objects.get(title=clean_name)
+
     except Item.DoesNotExist:
         return HttpResponse(status=400)
 

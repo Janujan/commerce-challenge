@@ -172,7 +172,7 @@ Details to an example script that performs the basic funcationality can be found
 
 ## Next Steps
 
-* Add a nice looking front-end
+* Add caching to speed up API
 * Add throttling
 * Integrate OAuth2.0
 * Look into porting system with GraphQL

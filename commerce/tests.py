@@ -36,7 +36,6 @@ class BaseViewTest(APITestCase):
         self.create_Item('erasor', 10.99, 19)
         self.create_Item('tape', 3.99, 0)
         self.create_Cart('test', 0, 0)
-        #user = User.objects.create_superuser(username="shopify", email="", password="testing21")
         self.user = get_user_model().objects.create_user('shopify', '', 'test')
 
 class GetItemsTest(BaseViewTest):
