@@ -12,9 +12,9 @@ from cart_ops import cartCreate, cartUpdate, cartComplete
 @api_view(['GET', 'POST'])
 def itemList(request, version):
     if request.method == 'GET':
-        """
+        '''
         Return a list of all items depending on query string
-        """"
+        '''
 
         items = Item.objects.all()
 
@@ -27,9 +27,9 @@ def itemList(request, version):
 
     elif request.method =='POST':
         if version == 'v1':
-            """
+            '''
             Purchase a single item
-            """"
+            '''
 
             serializer = ItemOrderSerializer(data=request.data)
             if serializer.is_valid():
@@ -63,13 +63,13 @@ def itemList(request, version):
 
             return JsonResponse(serializer.errors, status=400)
         elif version == 'v2':
-            """
+            '''
             Cart Posting
             Needs to have one of the following commands:
             - create
             - update
             - complete
-            """
+            '''
             try:
                 command = request.data['command']
             except KeyError:
@@ -105,14 +105,14 @@ def itemList(request, version):
 
 @api_view(['GET'])
 def detailItem(request, name, version):
-    """
+    '''
     Return a single item depending on name that is passed
-    """"
+    '''
     try:
         #perform some item name cleaning
         clean_name = name.lower()
         item = Item.objects.get(title=clean_name)
-        
+
     except Item.DoesNotExist:
         return HttpResponse(status=400)
 
